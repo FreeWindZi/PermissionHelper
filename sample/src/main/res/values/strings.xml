@@ -1,3 +1,23 @@
 <resources>
     <string name="app_name">PermissionHelper</string>
+    
+
+    <string name="introduce">
+        <![CDATA[
+
+           This sample show how to use PermissionHelper libary.
+           PermissionHelper libary is a libary to make no difference to
+           handle permission in Android M and above and below.
+
+        ]]>
+    </string>
+
+    <string name="single_permission">single permission test</string>
+    <string name="multi_permission">multi permission test</string>
+    
+    <string name="camera_permission">camera permission</string>
+    <string name="contacts_permission">contacts permission</string>
+    <string name="storage_permission">storage permission</string>
+
+
 </resources>
