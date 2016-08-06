@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.permissionhelper.sample.MainActivity;
 import com.permissionhelper.sample.R;
 
 /**
@@ -26,6 +27,7 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
 
         root.findViewById(R.id.btn_camera_permission).setOnClickListener(this);
         root.findViewById(R.id.btn_contacts_permission).setOnClickListener(this);
+        root.findViewById(R.id.btn_storage_permission).setOnClickListener(this);
 
 
         return root;
@@ -38,6 +40,11 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
             case R.id.btn_camera_permission:
                 break;
             case R.id.btn_contacts_permission:
+                break;
+            case R.id.btn_storage_permission:
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).changeFragment(new StoragePermissionsFragment(), "storage");
+                }
                 break;
         }
     }

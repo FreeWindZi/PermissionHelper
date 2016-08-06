@@ -19,5 +19,7 @@
     <string name="contacts_permission">contacts permission</string>
     <string name="storage_permission">storage permission</string>
 
+    <string name="read_storage_permission">read_storage_permission</string>
+    <string name="write_storage_permission">read_storage_permission</string>
 
 </resources>
