@@ -11,13 +11,13 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <context android:name=".MainActivity">
+        <activity android:name=".MainActivity"
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <action android:name="com.permissionhelper.sample.MainActivity"/>
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </context>
+        </activity>
     </application>
 
 </manifest>

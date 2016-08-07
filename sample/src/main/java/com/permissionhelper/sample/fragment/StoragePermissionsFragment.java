@@ -46,8 +46,12 @@ public class StoragePermissionsFragment extends Fragment implements View.OnClick
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        readPermission.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        writePermission.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (readPermission != null) {
+            readPermission.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+        if (writePermission != null) {
+            writePermission.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
     }
 
     @Override

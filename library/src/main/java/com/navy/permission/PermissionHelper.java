@@ -22,6 +22,7 @@ public class PermissionHelper{
 
     private Fragment fragment;
 
+    private Context context;
 
 
     private PermissionHelper(Activity activity,  Fragment fragment, String[] permissions, PermissionCallback permissionCallback, int requestCode) {
@@ -30,21 +31,40 @@ public class PermissionHelper{
         this.permissions = permissions;
         this.permissionCallback = permissionCallback;
         this.requestCode = requestCode;
+
+        if (activity != null){
+            context = activity;
+        }
+        if (fragment != null){
+            context = fragment.getContext();
+        }
     }
 
     public void requestPermissions() {
 
         for (String permission: permissions) {
-            if (! PermissionUtil.permissionExists(activity, permission)) {
+            if (! PermissionUtil.permissionExists(context, permission)) {
                 throw new IllegalArgumentException(permission + " must be define on the AndroidManifest.xml");
             }
         }
 
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            activity.requestPermissions(permissions, requestCode);
+
+            permissions = PermissionUtil.getDeniedPermissons(context, permissions);
+            if (permissions==null || permissions.length==0){
+               permissionCallback.onPermissionGranted();
+            } else {
+                if (activity == null) {
+                    fragment.requestPermissions(permissions, requestCode);
+                } else {
+                    activity.requestPermissions(permissions, requestCode);
+                }
+            }
+
+
         } else {
-            if (PermissionUtil.checkSelfPermissions(activity, permissions)){
+            if (PermissionUtil.checkSelfPermissions(context, permissions)){
                 permissionCallback.onPermissionGranted();
             } else {
                 permissionCallback.onPermissionReject();
@@ -59,7 +79,7 @@ public class PermissionHelper{
         if (this.requestCode != requestCode){
             return;
         }
-        if (PermissionUtil.checkSelfPermissions(activity, permissions)){
+        if (PermissionUtil.verifyPermissions(grantResults)){
             permissionCallback.onPermissionGranted();
         } else {
             permissionCallback.onPermissionReject();

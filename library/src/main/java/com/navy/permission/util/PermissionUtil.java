@@ -8,6 +8,8 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
+import java.util.ArrayList;
+
 /**
  * Created by Navy on 2016/8/6.
  */
@@ -51,5 +53,19 @@ public class PermissionUtil {
             e.printStackTrace();
         }
         return false;
+    }
+
+
+    /**
+     * 得到所有没有获得权限
+     */
+    public static String[] getDeniedPermissons(Context context, String[] permissionName){
+        ArrayList<String> needPermissons = new ArrayList<>();
+        for (String permission: permissionName){
+            if (ActivityCompat.checkSelfPermission(context, permission) != PackageManager.PERMISSION_GRANTED) {
+                needPermissons.add(permission);
+            }
+        }
+        return needPermissons.toArray(new String[needPermissons.size()]);
     }
 }
