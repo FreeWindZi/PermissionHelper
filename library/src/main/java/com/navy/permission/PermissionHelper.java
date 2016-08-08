@@ -11,10 +11,25 @@ import android.support.v4.app.Fragment;
 import com.navy.permission.callback.BaseCallback;
 import com.navy.permission.util.PermissionUtil;
 
+import java.util.Set;
+
 /**
  * Created by Navy on 2016/8/3.
  */
 public class PermissionHelper{
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private Object container;//可以是Activity,也可以是Fragment
     private String[] permissions;
@@ -107,18 +122,20 @@ public class PermissionHelper{
     /**
      * 使用Builder模式
      */
-    public static class Builder {
+    public static class WrapperModel {
         private Object container;//可以是Activity,也可以是Fragment
         private String[] permissions;
         private BaseCallback baseCallback;
         private int requestCode = 1000;
 
-        public Builder(Activity activity) {
+
+
+        public WrapperModel(Activity activity) {
             this((Object)activity);
         }
 
 
-        public Builder(Fragment fragment) {
+        public WrapperModel(Fragment fragment) {
             this((Object)fragment);
         }
 
@@ -126,11 +143,11 @@ public class PermissionHelper{
          * android.support.v4.app.Fragment , 不推荐
          * @param fragment
          */
-        private Builder(android.app.Fragment fragment){
+        private WrapperModel(android.app.Fragment fragment){
             this((Object)fragment);
         }
 
-        private Builder(Object container){
+        private WrapperModel(Object container){
             this.container = container;
         }
 
@@ -140,7 +157,7 @@ public class PermissionHelper{
          * @param permissions
          * @return
          */
-        public Builder setPermissionsArray(String[] permissions) {
+        public WrapperModel setPermissionsArray(String[] permissions) {
             return setPermissions(permissions);
         }
 
@@ -150,7 +167,7 @@ public class PermissionHelper{
          * @param permissions
          * @return
          */
-        public Builder setPermissions(String... permissions) {
+        public WrapperModel setPermissions(String... permissions) {
             if (permissions == null || permissions.length == 0) {
                 throw new IllegalArgumentException("permissions is  illegal");
             }
@@ -158,13 +175,13 @@ public class PermissionHelper{
             return this;
         }
 
-        public Builder setRequestCode(int requestCode) {
+        public WrapperModel setRequestCode(int requestCode) {
             this.requestCode = requestCode;
             return this;
         }
 
 
-        public Builder setBaseCallback(BaseCallback baseCallback) {
+        public WrapperModel setBaseCallback(BaseCallback baseCallback) {
             if (baseCallback == null) {
                 throw new IllegalArgumentException("baseCallback is illegal");
             }

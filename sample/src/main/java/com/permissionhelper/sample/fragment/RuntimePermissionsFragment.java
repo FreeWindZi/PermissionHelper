@@ -77,7 +77,7 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
 
 
     private void readStorage() {
-        readPermission = new PermissionHelper.Builder(this)
+        readPermission = new PermissionHelper.WrapperModel(this)
                 .setPermissions(PermissionModel.READ_EXTERNAL_STORAGE)
                 .setBaseCallback(new BaseCallback() {
                     @Override
@@ -98,7 +98,7 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
     }
 
     private void writeStorage(){
-        readPermission = new PermissionHelper.Builder(this)
+        readPermission = new PermissionHelper.WrapperModel(this)
                 .setPermissions(PermissionModel.WRITE_EXTERNAL_STORAGE)
                 .setRequestCode(100)
                 .setBaseCallback(new BaseCallback() {

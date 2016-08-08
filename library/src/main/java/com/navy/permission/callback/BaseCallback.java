@@ -10,9 +10,6 @@ public interface BaseCallback {
     void onPermissionReject();
 
 
-    /**
-     * 参考这个项目
-     */
-    //https://github.com/ParkSangGwon/TedPermission
+
 
 }
