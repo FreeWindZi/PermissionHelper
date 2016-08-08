@@ -1,5 +1,6 @@
 package com.navy.permission;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
@@ -7,7 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 
-import com.navy.permission.callback.PermissionCallback;
+import com.navy.permission.callback.BaseCallback;
 import com.navy.permission.util.PermissionUtil;
 
 /**
@@ -15,35 +16,26 @@ import com.navy.permission.util.PermissionUtil;
  */
 public class PermissionHelper{
 
-    private Activity activity;
+    private Object container;//可以是Activity,也可以是Fragment
     private String[] permissions;
-    private PermissionCallback permissionCallback;
+    private BaseCallback baseCallback;
     private int requestCode;
 
-    private Fragment fragment;
-
-    private Context context;
 
 
-    private PermissionHelper(Activity activity,  Fragment fragment, String[] permissions, PermissionCallback permissionCallback, int requestCode) {
-        this.activity = activity;
-        this.fragment = fragment;
+    private PermissionHelper(Object container, String[] permissions, BaseCallback baseCallback, int requestCode) {
+        this.container = container;
         this.permissions = permissions;
-        this.permissionCallback = permissionCallback;
+        this.baseCallback = baseCallback;
         this.requestCode = requestCode;
 
-        if (activity != null){
-            context = activity;
-        }
-        if (fragment != null){
-            context = fragment.getContext();
-        }
+
     }
 
     public void requestPermissions() {
 
         for (String permission: permissions) {
-            if (! PermissionUtil.permissionExists(context, permission)) {
+            if (! PermissionUtil.permissionExists(getContext(container), permission)) {
                 throw new IllegalArgumentException(permission + " must be define on the AndroidManifest.xml");
             }
         }
@@ -51,23 +43,19 @@ public class PermissionHelper{
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
-            permissions = PermissionUtil.getDeniedPermissons(context, permissions);
+            permissions = PermissionUtil.getDeniedPermissons(getContext(container), permissions);
             if (permissions==null || permissions.length==0){
-               permissionCallback.onPermissionGranted();
+               baseCallback.onPermissionGranted();
             } else {
-                if (activity == null) {
-                    fragment.requestPermissions(permissions, requestCode);
-                } else {
-                    activity.requestPermissions(permissions, requestCode);
-                }
+              requestPermissions(container, permissions, requestCode);
             }
 
 
         } else {
-            if (PermissionUtil.checkSelfPermissions(context, permissions)){
-                permissionCallback.onPermissionGranted();
+            if (PermissionUtil.checkSelfPermissions(getContext(container), permissions)){
+                baseCallback.onPermissionGranted();
             } else {
-                permissionCallback.onPermissionReject();
+                baseCallback.onPermissionReject();
             }
         }
 
@@ -80,37 +68,70 @@ public class PermissionHelper{
             return;
         }
         if (PermissionUtil.verifyPermissions(grantResults)){
-            permissionCallback.onPermissionGranted();
+            baseCallback.onPermissionGranted();
         } else {
-            permissionCallback.onPermissionReject();
+            baseCallback.onPermissionReject();
         }
     }
 
 
 
 
+    private Context getContext(Object container){
+        if (container instanceof Activity){
+            return (Activity) container;
+        } else if (container instanceof Fragment) {
+            return ((Fragment) container).getContext();
+        }
+//        } else if (container instanceof android.app.Fragment) {
+//            return ((android.app.Fragment) container).getContext();
+//        }
+        throw new IllegalArgumentException("container must be Activity ,or Fragment");
+    }
+
+    @TargetApi(value = Build.VERSION_CODES.M)
+    private void requestPermissions(Object container, @NonNull String[] permissions,int requestCode){
+        if (container instanceof Activity){
+            ActivityCompat.requestPermissions(((Activity) container), permissions, requestCode);
+        } else if (container instanceof Fragment) {
+            ((Fragment) container).requestPermissions(permissions, requestCode);
+        } else if (container instanceof android.app.Fragment) {
+            ((android.app.Fragment) container).requestPermissions(permissions, requestCode);
+        } else {
+            throw new IllegalArgumentException("container must be Activity ,or Fragment");
+        }
+
+    }
+
+
     /**
      * 使用Builder模式
      */
     public static class Builder {
-        private Activity activity;
-
-        private Fragment fragment;
+        private Object container;//可以是Activity,也可以是Fragment
         private String[] permissions;
-        private PermissionCallback permissionCallback;
+        private BaseCallback baseCallback;
         private int requestCode = 1000;
 
         public Builder(Activity activity) {
-            this.activity = activity;
+            this((Object)activity);
+        }
+
+
+        public Builder(Fragment fragment) {
+            this((Object)fragment);
         }
 
         /**
-         在Fragment中申请权限，不要使用ActivityCompat.requestPermissions,
-         直接使用Fragment的requestPermissions方法，否则会回调到Activity的onRequestPermissionsResult
+         * android.support.v4.app.Fragment , 不推荐
          * @param fragment
          */
-        public Builder(Fragment fragment) {
-            this.fragment = fragment;
+        private Builder(android.app.Fragment fragment){
+            this((Object)fragment);
+        }
+
+        private Builder(Object container){
+            this.container = container;
         }
 
         /**
@@ -143,18 +164,18 @@ public class PermissionHelper{
         }
 
 
-        public Builder setPermissionCallback(com.navy.permission.callback.PermissionCallback permissionCallback) {
-            if (permissionCallback == null) {
-                throw new IllegalArgumentException("permissionCallback is illegal");
+        public Builder setBaseCallback(BaseCallback baseCallback) {
+            if (baseCallback == null) {
+                throw new IllegalArgumentException("baseCallback is illegal");
             }
-            this.permissionCallback = permissionCallback;
+            this.baseCallback = baseCallback;
             return this;
         }
 
 
         public PermissionHelper build() { // 构建，返回一个新对象
 
-            return new PermissionHelper(activity, fragment,permissions, permissionCallback, requestCode);
+            return new PermissionHelper(container, permissions, baseCallback, requestCode);
 
         }
 

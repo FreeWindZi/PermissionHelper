@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +13,7 @@ import android.widget.Toast;
 
 import com.navy.permission.PermissionHelper;
 import com.navy.permission.PermissionModel;
-import com.navy.permission.callback.PermissionCallback;
+import com.navy.permission.callback.BaseCallback;
 import com.navy.permission.util.FileUtil;
 import com.permissionhelper.sample.R;
 
@@ -71,7 +70,7 @@ public class StoragePermissionsFragment extends Fragment implements View.OnClick
     private void readStorage() {
       readPermission = new PermissionHelper.Builder(this)
                 .setPermissions(PermissionModel.READ_EXTERNAL_STORAGE)
-                .setPermissionCallback(new PermissionCallback() {
+                .setBaseCallback(new BaseCallback() {
                     @Override
                     public void onPermissionGranted() {
                         String context = FileUtil.readStrinToFile(storageFile.getAbsolutePath());
@@ -91,15 +90,15 @@ public class StoragePermissionsFragment extends Fragment implements View.OnClick
         readPermission = new PermissionHelper.Builder(this)
                 .setPermissions(PermissionModel.WRITE_EXTERNAL_STORAGE)
                 .setRequestCode(100)
-                .setPermissionCallback(new PermissionCallback() {
+                .setBaseCallback(new BaseCallback() {
                     @Override
                     public void onPermissionGranted() {
                         String content = "sdfassssssssssssssssssssssssssssssfsadasfaaaaaaassssssadsadasdasdasdas";
-                         if (FileUtil.writeStrinToFile(storageFile.getAbsolutePath(), content)){
-                             Toast.makeText(getContext(), content+ "  写入成功", Toast.LENGTH_LONG).show();
-                         } else {
-                             Toast.makeText(getContext(), content+"  写入失败", Toast.LENGTH_LONG).show();
-                         }
+                        if (FileUtil.writeStrinToFile(storageFile.getAbsolutePath(), content)) {
+                            Toast.makeText(getContext(), content + "  写入成功", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(getContext(), content + "  写入失败", Toast.LENGTH_LONG).show();
+                        }
 
                     }
 

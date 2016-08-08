@@ -44,11 +44,31 @@
             android:text="@string/contacts_permission"
             android:id="@+id/btn_contacts_permission"
             />
+
+
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="5dp"
+        android:background="@color/color_deliver"/>
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/storage_permission"
         android:id="@+id/btn_storage_permission"
+        />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/write_storage_permission"
+        android:id="@+id/btn_write_storage"
+        />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/read_storage_permission"
+        android:id="@+id/btn_read_storage"
         />
 
 </LinearLayout>
