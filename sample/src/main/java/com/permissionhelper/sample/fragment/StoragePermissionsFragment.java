@@ -11,9 +11,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.navy.permission.PermissionHelper;
+import com.navy.permission.PermissionHelperTest;
 import com.navy.permission.PermissionModel;
-import com.navy.permission.callback.BaseCallback;
+import com.navy.permission.callback.PermissonCallback;
 import com.navy.permission.util.FileUtil;
 import com.permissionhelper.sample.R;
 
@@ -27,8 +27,8 @@ public class StoragePermissionsFragment extends Fragment implements View.OnClick
     private final File storageFile =  new File(Environment.getExternalStorageDirectory().getAbsoluteFile()+
             File.separator+"permissions"+File.separator+"storage_permissions.txt");
 
-    PermissionHelper readPermission;
-    PermissionHelper writePermission;
+    PermissionHelperTest readPermission;
+    PermissionHelperTest writePermission;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -68,9 +68,9 @@ public class StoragePermissionsFragment extends Fragment implements View.OnClick
     }
 
     private void readStorage() {
-      readPermission = new PermissionHelper.WrapperModel(this)
+      readPermission = new PermissionHelperTest.WrapperModel(this)
                 .setPermissions(PermissionModel.READ_EXTERNAL_STORAGE)
-                .setBaseCallback(new BaseCallback() {
+                .setBaseCallback(new PermissonCallback() {
                     @Override
                     public void onPermissionGranted() {
                         String context = FileUtil.readStrinToFile(storageFile.getAbsolutePath());
@@ -87,10 +87,10 @@ public class StoragePermissionsFragment extends Fragment implements View.OnClick
     }
 
     private void writeStorage(){
-        readPermission = new PermissionHelper.WrapperModel(this)
+        readPermission = new PermissionHelperTest.WrapperModel(this)
                 .setPermissions(PermissionModel.WRITE_EXTERNAL_STORAGE)
                 .setRequestCode(100)
-                .setBaseCallback(new BaseCallback() {
+                .setBaseCallback(new PermissonCallback() {
                     @Override
                     public void onPermissionGranted() {
                         String content = "sdfassssssssssssssssssssssssssssssfsadasfaaaaaaassssssadsadasdasdasdas";
