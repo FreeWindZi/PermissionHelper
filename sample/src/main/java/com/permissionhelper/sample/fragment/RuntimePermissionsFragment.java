@@ -11,10 +11,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.navy.permission.PermissionHelper;
 import com.navy.permission.PermissionHelperTest;
 import com.navy.permission.PermissionModel;
 import com.navy.permission.callback.PermissonCallback;
 import com.navy.permission.util.FileUtil;
+import com.navy.permission.util.LogUtil;
 import com.permissionhelper.sample.MainActivity;
 import com.permissionhelper.sample.R;
 
@@ -29,8 +31,7 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
     private final File storageFile =  new File(Environment.getExternalStorageDirectory().getAbsoluteFile()+
             File.separator+"permissions"+File.separator+"storage_permissions.txt");
 
-    PermissionHelperTest readPermission;
-    PermissionHelperTest writePermission;
+
 
 
     @Nullable
@@ -60,9 +61,9 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
             case R.id.btn_contacts_permission:
                 break;
             case R.id.btn_storage_permission:
-                if (getActivity() instanceof MainActivity) {
-                    ((MainActivity) getActivity()).changeFragment(new StoragePermissionsFragment(), "storage");
-                }
+//                if (getActivity() instanceof MainActivity) {
+//                    ((MainActivity) getActivity()).changeFragment(new StoragePermissionsFragment(), "storage");
+//                }
                 break;
             case R.id.btn_write_storage:
 
@@ -77,9 +78,10 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
 
 
     private void readStorage() {
-        readPermission = new PermissionHelperTest.WrapperModel(this)
+         PermissionHelper.getInstance().with(this)
                 .setPermissions(PermissionModel.READ_EXTERNAL_STORAGE)
-                .setBaseCallback(new PermissonCallback() {
+                 .setRequestCode(1000)
+                .setPermissonCallback(new PermissonCallback() {
                     @Override
                     public void onPermissionGranted() {
                         String context = FileUtil.readStrinToFile(storageFile.getAbsolutePath());
@@ -93,15 +95,15 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
 
 
                 })
-                .build();
-        readPermission.requestPermissions();
+                .requestPermissions();
+
     }
 
     private void writeStorage(){
-        readPermission = new PermissionHelperTest.WrapperModel(this)
+        PermissionHelper.getInstance().with(this)
                 .setPermissions(PermissionModel.WRITE_EXTERNAL_STORAGE)
                 .setRequestCode(100)
-                .setBaseCallback(new PermissonCallback() {
+                .setPermissonCallback(new PermissonCallback() {
                     @Override
                     public void onPermissionGranted() {
                         String content = "sdfassssssssssssssssssssssssssssssfsadasfaaaaaaassssssadsadasdasdasdas";
@@ -118,19 +120,13 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
                         Toast.makeText(getContext(), "权限被拒绝", Toast.LENGTH_LONG).show();
                     }
                 })
-                .build();
-        readPermission.requestPermissions();
+                .requestPermissions();
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (readPermission != null) {
-            readPermission.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
-        if (writePermission != null) {
-            writePermission.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        }
+        LogUtil.d("==================onRequestPermissionsResult");
+        PermissionHelper.getInstance().onRequestPermissionsResult(this,requestCode, permissions, grantResults);
     }
 
 

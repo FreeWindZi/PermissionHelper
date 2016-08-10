@@ -1,0 +1,62 @@
+操作流程  给PermissionHelper传递了一frament对象
+PermissionHelper.getInstance().onRequestPermissionsResult(this,requestCode, permissions, grantResults);
+
+该方法多次调用
+
+
+08-10 11:04:42.421 20646-20646/? E/Zygote: v2
+08-10 11:04:42.421 20646-20646/? E/Zygote: accessInfo : 0
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime: FATAL EXCEPTION: main
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime: Process: com.permissionhelper.sample, PID: 20646
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime: java.lang.StackOverflowError: stack size 8MB
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.navy.permission.PermissionHelper.onRequestPermissionsResult(PermissionHelper.java:156)
+08-10 11:05:06.381 20646-20646/com.permissionhelper.sample E/AndroidRuntime: 	at com.navy.permission.PermissionHelper.onReque
+08-10 11:05:07.451 20646-20646/com.permissionhelper.sample E/JavaBinder: !!! FAILED BINDER TRANSACTION !!!  (parcel size = 33126676)
+08-10 11:05:07.481 20646-20646/com.permissionhelper.sample E/AndroidRuntime: Error reporting crash
+08-10 11:05:07.481 20646-20646/com.permissionhelper.sample E/AndroidRuntime: android.os.TransactionTooLargeException: data parcel size 33126676 bytes
+08-10 11:05:07.481 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at android.os.BinderProxy.transactNative(Native Method)
+08-10 11:05:07.481 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at android.os.BinderProxy.transact(Binder.java:503)
+08-10 11:05:07.481 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at android.app.ActivityManagerProxy.handleApplicationCrash(ActivityManagerNative.java:5453)
+08-10 11:05:07.481 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at com.android.internal.os.RuntimeInit$UncaughtHandler.uncaughtException(RuntimeInit.java:96)
+08-10 11:05:07.481 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at java.lang.ThreadGroup.uncaughtException(ThreadGroup.java:693)
+08-10 11:05:07.481 20646-20646/com.permissionhelper.sample E/AndroidRuntime:     at java.lang.ThreadGroup.uncaughtException(ThreadGroup.java:690)

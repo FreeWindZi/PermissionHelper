@@ -10,8 +10,11 @@ import android.support.v4.app.Fragment;
 
 import com.navy.permission.callback.PermissonCallback;
 import com.navy.permission.util.LogUtil;
+import com.navy.permission.util.PermissionUtil;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -27,11 +30,14 @@ public class PermissionHelper {
 
     PermissionHelper.WrapperModel model = null;
 
-    public static PermissionHelper permissionHelper;
+    public static PermissionHelper permissionHelper = null;
 
 
     public static PermissionHelper getInstance(){
-        return new PermissionHelper();
+        if (permissionHelper == null){
+            permissionHelper = new PermissionHelper();
+        }
+        return permissionHelper;
     }
 
     private PermissionHelper(){
@@ -46,77 +52,175 @@ public class PermissionHelper {
         return isDebug;
     }
 
-    public WrapperModel with(Activity activity){
+    public PermissionHelper with(Activity activity){
         model = new WrapperModel(activity);
-        return model;
+        return this;
     }
 
-    public WrapperModel with(android.app.Fragment fragment){
+    public PermissionHelper with(android.app.Fragment fragment){
         model = new WrapperModel(fragment);
-        return model;
+        return this;
     }
 
-    public WrapperModel with(Fragment fragment){
+    public PermissionHelper with(Fragment fragment){
         model = new WrapperModel(fragment);
-        return model;
+        return this;
     }
 
 
-    public WrapperModel setPermissions(String... permissions){
+    public PermissionHelper setPermissions(String... permissions){
         if (model == null) {
             throw new IllegalArgumentException("you must call wth() mothed first");
         }
         model.setPermissions(permissions);
-        return model;
+        return this;
     }
 
-    public WrapperModel setRequestCode(int requestCode){
+    public PermissionHelper setRequestCode(int requestCode){
         if (model == null) {
             throw new IllegalArgumentException("you must call wth() mothed first");
         }
         model.setRequestCode(requestCode);
-        return model;
+        return this;
     }
 
 
 
-    public WrapperModel setPermissonCallback(PermissonCallback callback){
+    public PermissionHelper setPermissonCallback(PermissonCallback callback){
         if (model == null) {
             throw new IllegalArgumentException("you must call wth() mothed first");
         }
         model.setPermissonCallback(callback);
-        return model;
+        return this;
     }
 
-    public void requestPermission(){
+    public void requestPermissions(){
         LogUtil.d("开始检查输入的参数");
         checkWrapperModel(model);
         if (appContext == null){
             appContext = getContext(model.container).getApplicationContext();
         }
         LogUtil.d("输入参数合法-------" +model.toString());
-        if (! permissionSet.add(model)){
+        if (permissionSet == null) {
+            permissionSet = new HashSet<>();
+        }
+        if ( permissionSet.contains(model)){
             throw new IllegalArgumentException("you must hava different requestCode or permissions or container");
         }
-        model = null;
 
-        LogUtil.d("设置model为null  "+ "permissionSet的长度为:" +permissionSet.size());
-        for (WrapperModel wrapperModel: permissionSet) {
 
+        for (String permission: model.permissions) {
+            if (! PermissionUtil.permissionExists(appContext, permission)) {
+                throw new IllegalArgumentException(permission + " must be define on the AndroidManifest.xml");
+            }
         }
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+            model.permissions = PermissionUtil.getDeniedPermissons(appContext, model.permissions);
+            if (model.permissions==null || model.permissions.length==0){
+                model.permissonCallback.onPermissionGranted();
+            } else {
+                permissionSet.add(model);
+                LogUtil.d("permissionSet的长度加1    " + "permissionSet的长度为:" + permissionSet.size());
+                requestPermissions(model.container, model.permissions, model.requestCode);
+
+            }
+
+
+        } else {
+            if (PermissionUtil.checkSelfPermissions(getContext(appContext), model.permissions)){
+                model.permissonCallback.onPermissionGranted();
+            } else {
+                model.permissonCallback.onPermissionReject();
+            }
+        }
+
+
+
+        model = null;
+        LogUtil.d("设置model为null  ");
+
     }
 
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults){
+
+
+    public void onRequestPermissionsResult(Activity activity,int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults){
+        onRequestPermissionsResult(activity, requestCode, permissions, grantResults);
+    }
+
+
+
+    public void onRequestPermissionsResult(Fragment fragment, int requestCode,@NonNull String[] permissions, @NonNull int[] grantResults){
+        onRequestPermissionsResult(fragment, requestCode, permissions, grantResults);
+    }
+    public void onRequestPermissionsResult(android.app.Fragment fragment, int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults){
+        onRequestPermissionsResult(fragment, requestCode, permissions, grantResults);
+    }
+
+
+    public void onRequestPermissionsResult(Object container, int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults){
+        LogUtil.d("请求回调 权限参数回调开始");
+        WrapperModel tempModel = new WrapperModel(container);
+        tempModel.setPermissions(permissions);
+        tempModel.setRequestCode(requestCode);
+        if (!permissionSet.contains(tempModel)) {
+            LogUtil.e("请求参赛与请求回调参数不同, 请仔细检查");
+            throw new IllegalArgumentException("请求参赛与请求回调参数不同, 请仔细检查");
+        }
+
+        Iterator<WrapperModel> iter = permissionSet.iterator();
+        while (iter.hasNext()) {
+            WrapperModel model = iter.next();
+            if (model.equals(tempModel)) {
+                if (PermissionUtil.verifyPermissions(grantResults)){
+                    model.permissonCallback.onPermissionGranted();
+                } else {
+                    model.permissonCallback.onPermissionReject();
+                }
+                break;
+            }
+        }
+        LogUtil.d("权限借口回调完成");
+        permissionSet.remove(tempModel);
+        LogUtil.d("permissionSet 移除数据 " + "permissionSet的长度为:" + permissionSet.size());
+
+
 
     }
 
 
 
+    public void onRequestPermissionsResult( int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults){
+        LogUtil.d("请求回调 权限参数回调开始");
+        WrapperModel tempModel = new WrapperModel();
+        tempModel.setPermissions(permissions);
+        tempModel.setRequestCode(requestCode);
+        if (!permissionSet.contains(tempModel)) {
+            LogUtil.e("请求参赛与请求回调参数不同, 请仔细检查");
+            throw new IllegalArgumentException("请求参赛与请求回调参数不同, 请仔细检查");
+        }
+
+        Iterator<WrapperModel> iter = permissionSet.iterator();
+        while (iter.hasNext()) {
+            WrapperModel model = iter.next();
+            if (model.equals(tempModel)) {
+                if (PermissionUtil.verifyPermissions(grantResults)){
+                    model.permissonCallback.onPermissionGranted();
+                } else {
+                    model.permissonCallback.onPermissionReject();
+                }
+                break;
+            }
+        }
+        LogUtil.d("权限借口回调完成");
+        permissionSet.remove(tempModel);
+        LogUtil.d("permissionSet 移除数据 " + "permissionSet的长度为:" + permissionSet.size());
 
 
 
-
-
+    }
 
 
 
@@ -155,12 +259,14 @@ public class PermissionHelper {
             return ((Fragment) container).getContext();
         } else if (container instanceof android.app.Fragment) {
             return ((android.app.Fragment) container).getContext();
+        } else {
+            throw new IllegalArgumentException("container must be Activity ,or Fragment");
         }
-        throw new IllegalArgumentException("container must be Activity ,or Fragment");
+
     }
 
     @TargetApi(value = Build.VERSION_CODES.M)
-    private void requestPermissions(Object container, @NonNull String[] permissions,int requestCode){
+    private synchronized void requestPermissions(Object container, @NonNull String[] permissions,int requestCode){
         if (container instanceof Activity){
             ActivityCompat.requestPermissions(((Activity) container), permissions, requestCode);
         } else if (container instanceof Fragment) {
@@ -184,7 +290,7 @@ public class PermissionHelper {
         private PermissonCallback permissonCallback;
         private int requestCode;
 
-        private WrapperModel(){};
+
 
         public WrapperModel(Activity activity) {
             this((Object)activity);
@@ -206,6 +312,9 @@ public class PermissionHelper {
         private WrapperModel(Object container){
             this.container = container;
 
+        }
+
+        private WrapperModel(){
         }
         public void setPermissions(String... permissions) {
             this.permissions = permissions;
@@ -229,8 +338,8 @@ public class PermissionHelper {
             WrapperModel that = (WrapperModel) o;
 
             if (requestCode != that.requestCode) return false;
-            if (container != null ? !container.equals(that.container) : that.container != null)
-                return false;
+//            if (container != null ? !container.equals(that.container) : that.container != null)
+//                return false;
             // Probably incorrect - comparing Object[] arrays with Arrays.equals
             if (!Arrays.equals(permissions, that.permissions))
                 return false;
@@ -240,6 +349,16 @@ public class PermissionHelper {
 
 //            return !(permissonCallback != null ? !permissonCallback.equals(that.permissonCallback) : that.permissonCallback != null);
 
+        }
+
+        @Override
+        public int hashCode() {
+            int result = 0;
+            //result = container != null ? container.hashCode() : 0;
+            result = 31 * result + (permissions != null ? Arrays.hashCode(permissions) : 0);
+            //result = 31 * result + (permissonCallback != null ? permissonCallback.hashCode() : 0);
+            result = 31 * result + requestCode;
+            return result;
         }
 
         @Override
