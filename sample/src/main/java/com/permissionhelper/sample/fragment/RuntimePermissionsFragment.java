@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,7 +26,8 @@ import java.io.File;
 /**
  * Created by navychen on 16/8/5.
  */
-public class RuntimePermissionsFragment extends Fragment implements View.OnClickListener {
+public class RuntimePermissionsFragment extends Fragment implements View.OnClickListener ,
+        ActivityCompat.OnRequestPermissionsResultCallback{
 
 
     private final File storageFile =  new File(Environment.getExternalStorageDirectory().getAbsoluteFile()+
@@ -126,7 +128,7 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         LogUtil.d("==================onRequestPermissionsResult");
-        PermissionHelper.getInstance().onRequestPermissionsResult(this,requestCode, permissions, grantResults);
+        PermissionHelper.getInstance().onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
 

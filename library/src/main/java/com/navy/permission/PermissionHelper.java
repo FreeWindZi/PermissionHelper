@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Created by Navy on 2016/8/3.
@@ -97,19 +98,43 @@ public class PermissionHelper {
     public void requestPermissions(){
         LogUtil.d("开始检查输入的参数");
         checkWrapperModel(model);
-        if (appContext == null){
-            appContext = getContext(model.container).getApplicationContext();
-        }
-        LogUtil.d("输入参数合法-------" +model.toString());
+
+        LogUtil.d("输入参数合法-------" + model.toString());
         if (permissionSet == null) {
             permissionSet = new HashSet<>();
         }
         if ( permissionSet.contains(model)){
-            throw new IllegalArgumentException("you must hava different requestCode or permissions or container");
+            LogUtil.e("you must hava different requestCode or permissions");
+            model = null;
+            return;
         }
 
+        ///
 
-        for (String permission: model.permissions) {
+        permissionSet.add(model);
+        LogUtil.d("permissionSet的长度加1   +++" + "permissionSet的长度为:" + permissionSet.size());
+        model = null;
+        LogUtil.d("设置model为null  ");
+        Iterator<WrapperModel> iter = permissionSet.iterator();
+        while (iter.hasNext()) {
+            WrapperModel tempModel = iter.next();
+            boolean isNeedResult=requestPermissionsModel(tempModel);
+            if (!isNeedResult){
+                LogUtil.d("permissionSet的长度减1 ---- " );
+                iter.remove();
+            }
+        }
+        LogUtil.d("权限声请完毕   permissionSet的长度为:" +  permissionSet.size());
+    }
+
+
+    //返回的参数 表示是否要回调onRequestPermissionsResult  如果需要回调permissionSet 就不删除
+    private boolean requestPermissionsModel(WrapperModel pModel){
+        if (appContext == null){
+            appContext = getContext(pModel.container).getApplicationContext();
+        }
+
+        for (String permission: pModel.permissions) {
             if (! PermissionUtil.permissionExists(appContext, permission)) {
                 throw new IllegalArgumentException(permission + " must be define on the AndroidManifest.xml");
             }
@@ -118,76 +143,25 @@ public class PermissionHelper {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
-            model.permissions = PermissionUtil.getDeniedPermissons(appContext, model.permissions);
-            if (model.permissions==null || model.permissions.length==0){
-                model.permissonCallback.onPermissionGranted();
+            pModel.permissions = PermissionUtil.getDeniedPermissons(appContext, pModel.permissions);
+            if (pModel.permissions==null || pModel.permissions.length==0){
+                pModel.permissonCallback.onPermissionGranted();
             } else {
-                permissionSet.add(model);
-                LogUtil.d("permissionSet的长度加1    " + "permissionSet的长度为:" + permissionSet.size());
-                requestPermissions(model.container, model.permissions, model.requestCode);
+
+                requestPermissions(pModel.container, pModel.permissions, pModel.requestCode);
+                return true;
 
             }
 
 
         } else {
-            if (PermissionUtil.checkSelfPermissions(getContext(appContext), model.permissions)){
-                model.permissonCallback.onPermissionGranted();
+            if (PermissionUtil.checkSelfPermissions(appContext, pModel.permissions)){
+                pModel.permissonCallback.onPermissionGranted();
             } else {
-                model.permissonCallback.onPermissionReject();
+                pModel.permissonCallback.onPermissionReject();
             }
         }
-
-
-
-        model = null;
-        LogUtil.d("设置model为null  ");
-
-    }
-
-
-
-    public void onRequestPermissionsResult(Activity activity,int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults){
-        onRequestPermissionsResult(activity, requestCode, permissions, grantResults);
-    }
-
-
-
-    public void onRequestPermissionsResult(Fragment fragment, int requestCode,@NonNull String[] permissions, @NonNull int[] grantResults){
-        onRequestPermissionsResult(fragment, requestCode, permissions, grantResults);
-    }
-    public void onRequestPermissionsResult(android.app.Fragment fragment, int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults){
-        onRequestPermissionsResult(fragment, requestCode, permissions, grantResults);
-    }
-
-
-    public void onRequestPermissionsResult(Object container, int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults){
-        LogUtil.d("请求回调 权限参数回调开始");
-        WrapperModel tempModel = new WrapperModel(container);
-        tempModel.setPermissions(permissions);
-        tempModel.setRequestCode(requestCode);
-        if (!permissionSet.contains(tempModel)) {
-            LogUtil.e("请求参赛与请求回调参数不同, 请仔细检查");
-            throw new IllegalArgumentException("请求参赛与请求回调参数不同, 请仔细检查");
-        }
-
-        Iterator<WrapperModel> iter = permissionSet.iterator();
-        while (iter.hasNext()) {
-            WrapperModel model = iter.next();
-            if (model.equals(tempModel)) {
-                if (PermissionUtil.verifyPermissions(grantResults)){
-                    model.permissonCallback.onPermissionGranted();
-                } else {
-                    model.permissonCallback.onPermissionReject();
-                }
-                break;
-            }
-        }
-        LogUtil.d("权限借口回调完成");
-        permissionSet.remove(tempModel);
-        LogUtil.d("permissionSet 移除数据 " + "permissionSet的长度为:" + permissionSet.size());
-
-
-
+        return false;
     }
 
 
