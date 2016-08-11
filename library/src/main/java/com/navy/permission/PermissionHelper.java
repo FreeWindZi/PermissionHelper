@@ -8,15 +8,16 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 
-import com.navy.permission.callback.PermissonCallback;
+import com.navy.permission.callback.PermissionCallback;
+import com.navy.permission.callback.PermissionDetailCallback;
 import com.navy.permission.util.LogUtil;
 import com.navy.permission.util.PermissionUtil;
 
+import java.security.Permission;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.List;
 
 /**
  * Created by Navy on 2016/8/3.
@@ -25,24 +26,24 @@ public class PermissionHelper {
 
     public static String TAG = "===========PermissionHelperTest";
 
-    private   boolean isDebug = true;
-    Context appContext;
-    Set<WrapperModel> permissionSet;
+    private boolean isDebug = true;
+    private Context appContext;
+    private List<WrapperModel> wrapperModelList;
 
-    PermissionHelper.WrapperModel model = null;
+    private PermissionHelper.WrapperModel model = null;
 
     public static PermissionHelper permissionHelper = null;
 
 
-    public static PermissionHelper getInstance(){
-        if (permissionHelper == null){
+    public static PermissionHelper getInstance() {
+        if (permissionHelper == null) {
             permissionHelper = new PermissionHelper();
         }
         return permissionHelper;
     }
 
-    private PermissionHelper(){
-        
+    private PermissionHelper() {
+
     }
 
     public void setIsDebug(boolean isDebug) {
@@ -53,23 +54,23 @@ public class PermissionHelper {
         return isDebug;
     }
 
-    public PermissionHelper with(Activity activity){
+    public PermissionHelper with(Activity activity) {
         model = new WrapperModel(activity);
         return this;
     }
 
-    public PermissionHelper with(android.app.Fragment fragment){
+    public PermissionHelper with(android.app.Fragment fragment) {
         model = new WrapperModel(fragment);
         return this;
     }
 
-    public PermissionHelper with(Fragment fragment){
+    public PermissionHelper with(Fragment fragment) {
         model = new WrapperModel(fragment);
         return this;
     }
 
 
-    public PermissionHelper setPermissions(String... permissions){
+    public PermissionHelper setPermissions(String... permissions) {
         if (model == null) {
             throw new IllegalArgumentException("you must call wth() mothed first");
         }
@@ -77,7 +78,7 @@ public class PermissionHelper {
         return this;
     }
 
-    public PermissionHelper setRequestCode(int requestCode){
+    public PermissionHelper setRequestCode(int requestCode) {
         if (model == null) {
             throw new IllegalArgumentException("you must call wth() mothed first");
         }
@@ -86,56 +87,56 @@ public class PermissionHelper {
     }
 
 
-
-    public PermissionHelper setPermissonCallback(PermissonCallback callback){
+    public PermissionHelper setPermissonCallback(PermissionCallback callback) {
         if (model == null) {
             throw new IllegalArgumentException("you must call wth() mothed first");
         }
-        model.setPermissonCallback(callback);
+        model.setPermissionCallback(callback);
         return this;
     }
 
-    public void requestPermissions(){
+    public void requestPermissions() {
         LogUtil.d("开始检查输入的参数");
         checkWrapperModel(model);
 
         LogUtil.d("输入参数合法-------" + model.toString());
-        if (permissionSet == null) {
-            permissionSet = new HashSet<>();
+        if (wrapperModelList == null) {
+            wrapperModelList = new ArrayList<>();
         }
-        if ( permissionSet.contains(model)){
+        if (wrapperModelList.contains(model)) {
             LogUtil.e("you must hava different requestCode or permissions");
             model = null;
             return;
         }
 
-        ///
 
-        permissionSet.add(model);
-        LogUtil.d("permissionSet的长度加1   +++" + "permissionSet的长度为:" + permissionSet.size());
+        wrapperModelList.add(model);
+        LogUtil.d("permissionSet的长度加1   +++" + "permissionSet的长度为:" + wrapperModelList.size());
         model = null;
         LogUtil.d("设置model为null  ");
-        Iterator<WrapperModel> iter = permissionSet.iterator();
+        Iterator<WrapperModel> iter = wrapperModelList.iterator();
         while (iter.hasNext()) {
             WrapperModel tempModel = iter.next();
-            boolean isNeedResult=requestPermissionsModel(tempModel);
-            if (!isNeedResult){
-                LogUtil.d("permissionSet的长度减1 ---- " );
+            boolean isNeedResult = requestPermissionsModel(tempModel);
+            if (!isNeedResult) {
+                LogUtil.d("permissionSet的长度减1 ---- ");
                 iter.remove();
             }
         }
-        LogUtil.d("权限声请完毕   permissionSet的长度为:" +  permissionSet.size());
+        LogUtil.d("权限声请完毕   permissionSet的长度为:" + wrapperModelList.size());
     }
 
 
+
+
     //返回的参数 表示是否要回调onRequestPermissionsResult  如果需要回调permissionSet 就不删除
-    private boolean requestPermissionsModel(WrapperModel pModel){
-        if (appContext == null){
+    private boolean requestPermissionsModel(WrapperModel pModel) {
+        if (appContext == null) {
             appContext = getContext(pModel.container).getApplicationContext();
         }
 
-        for (String permission: pModel.permissions) {
-            if (! PermissionUtil.permissionExists(appContext, permission)) {
+        for (String permission : pModel.permissions) {
+            if (!PermissionUtil.permissionExists(appContext, permission)) {
                 throw new IllegalArgumentException(permission + " must be define on the AndroidManifest.xml");
             }
         }
@@ -144,90 +145,112 @@ public class PermissionHelper {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
             pModel.permissions = PermissionUtil.getDeniedPermissons(appContext, pModel.permissions);
-            if (pModel.permissions==null || pModel.permissions.length==0){
-                pModel.permissonCallback.onPermissionGranted();
+            if (pModel.permissions == null || pModel.permissions.length == 0) {
+                pModel.permissionCallback.onPermissionGranted();
             } else {
 
-                requestPermissions(pModel.container, pModel.permissions, pModel.requestCode);
+                //如果接口是PermissionDetailCallback 添加回调解释接口
+
+                if (pModel.permissionCallback instanceof PermissionDetailCallback) {
+                    //add by navy
+                    List<String> explainPermission = new ArrayList<>();
+                    for (String permission :pModel.permissions) {
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(pModel.container),
+                                permission)){
+                            explainPermission.add(permission);
+                            //
+                        } else {
+                            //noExplainPermission.add(permission);
+                        }
+
+                    }
+                    //if (explainPermission.size() == pModel.)
+                    ((PermissionDetailCallback)pModel.permissionCallback).onPermissionExplained(explainPermission.toArray(new String[1]), pModel);
+                   return false;
+
+
+                } else {
+                    requestPermissions(pModel.container, pModel.permissions, pModel.requestCode);
+                }
                 return true;
 
             }
 
 
         } else {
-            if (PermissionUtil.checkSelfPermissions(appContext, pModel.permissions)){
-                pModel.permissonCallback.onPermissionGranted();
+            if (PermissionUtil.checkSelfPermissions(appContext, pModel.permissions)) {
+                pModel.permissionCallback.onPermissionGranted();
             } else {
-                pModel.permissonCallback.onPermissionReject();
+                pModel.permissionCallback.onPermissionReject();
             }
         }
         return false;
     }
 
 
+    public void requestAfterExplanation(String []permission, WrapperModel model){
+        requestPermissionsModel(model);
+    }
 
-    public void onRequestPermissionsResult( int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults){
+
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         LogUtil.d("请求回调 权限参数回调开始");
         WrapperModel tempModel = new WrapperModel();
         tempModel.setPermissions(permissions);
         tempModel.setRequestCode(requestCode);
-        if (!permissionSet.contains(tempModel)) {
+        if (!wrapperModelList.contains(tempModel)) {
             LogUtil.e("请求参赛与请求回调参数不同, 请仔细检查");
             throw new IllegalArgumentException("请求参赛与请求回调参数不同, 请仔细检查");
         }
 
-        Iterator<WrapperModel> iter = permissionSet.iterator();
+        Iterator<WrapperModel> iter = wrapperModelList.iterator();
         while (iter.hasNext()) {
             WrapperModel model = iter.next();
             if (model.equals(tempModel)) {
-                if (PermissionUtil.verifyPermissions(grantResults)){
-                    model.permissonCallback.onPermissionGranted();
+                if (PermissionUtil.verifyPermissions(grantResults)) {
+                    model.permissionCallback.onPermissionGranted();
                 } else {
-                    model.permissonCallback.onPermissionReject();
+                    model.permissionCallback.onPermissionReject();
                 }
                 break;
             }
         }
         LogUtil.d("权限借口回调完成");
-        permissionSet.remove(tempModel);
-        LogUtil.d("permissionSet 移除数据 " + "permissionSet的长度为:" + permissionSet.size());
-
+        wrapperModelList.remove(tempModel);
+        LogUtil.d("wrapperModelList 移除数据 " + "permissionSet的长度为:" + wrapperModelList.size());
 
 
     }
 
 
-
-
-
-    public static void checkWrapperModel(PermissionHelper.WrapperModel wrapperModel){
+    public static void checkWrapperModel(PermissionHelper.WrapperModel wrapperModel) {
         if (wrapperModel == null) {
             throw new NullPointerException("WrapperModel cannot be null");
         }
-        if (wrapperModel.container == null){
+        if (wrapperModel.container == null) {
             throw new NullPointerException("WrapperModel container cannot be null");
         }
         if (!(wrapperModel.container instanceof Activity
                 || wrapperModel.container instanceof android.app.Fragment
-                || wrapperModel.container instanceof Fragment)){
+                || wrapperModel.container instanceof Fragment)) {
             throw new IllegalArgumentException("WrapperModel container must be Activity ,or Fragment");
         }
 
-        if (wrapperModel.requestCode <= 0){
+        if (wrapperModel.requestCode <= 0) {
             throw new IllegalArgumentException("RequestCode must >0");
         }
-        if (wrapperModel.permissions== null || wrapperModel.permissions.length==0){
+        if (wrapperModel.permissions == null || wrapperModel.permissions.length == 0) {
             throw new IllegalArgumentException("permissions cannot be null, or it's lenth must >0");
         }
-        if (wrapperModel.permissonCallback == null) {
-            throw new NullPointerException("permissonCallback cannot be null");
+        if (wrapperModel.permissionCallback == null) {
+            throw new NullPointerException("permissionCallback cannot be null");
         }
     }
 
 
-
-    private Context getContext(Object container){
-        if (container instanceof Activity){
+    private Context getContext(Object container) {
+        if (container instanceof Activity) {
             return (Activity) container;
         } else if (container instanceof Fragment) {
             return ((Fragment) container).getContext();
@@ -239,9 +262,22 @@ public class PermissionHelper {
 
     }
 
+    private Activity getActivity(Object container) {
+        if (container instanceof Activity) {
+            return (Activity) container;
+        } else if (container instanceof Fragment) {
+            return ((Fragment) container).getActivity();
+        } else if (container instanceof android.app.Fragment) {
+            return ((android.app.Fragment) container).getActivity();
+        } else {
+            throw new IllegalArgumentException("container must be Activity ,or Fragment");
+        }
+
+    }
+
     @TargetApi(value = Build.VERSION_CODES.M)
-    private synchronized void requestPermissions(Object container, @NonNull String[] permissions,int requestCode){
-        if (container instanceof Activity){
+    private synchronized void requestPermissions(Object container, @NonNull String[] permissions, int requestCode) {
+        if (container instanceof Activity) {
             ActivityCompat.requestPermissions(((Activity) container), permissions, requestCode);
         } else if (container instanceof Fragment) {
             ((Fragment) container).requestPermissions(permissions, requestCode);
@@ -254,42 +290,39 @@ public class PermissionHelper {
     }
 
 
-
-
-
-
-    private static class WrapperModel {
+    public static class WrapperModel {
         private Object container;//可以是Activity,也可以是Fragment
         private String[] permissions;
-        private PermissonCallback permissonCallback;
+        private PermissionCallback permissionCallback;
         private int requestCode;
 
 
-
         public WrapperModel(Activity activity) {
-            this((Object)activity);
+            this((Object) activity);
         }
 
 
         public WrapperModel(Fragment fragment) {
-            this((Object)fragment);
+            this((Object) fragment);
         }
 
         /**
          * android.support.v4.app.Fragment , 不推荐
+         *
          * @param fragment
          */
-        private WrapperModel(android.app.Fragment fragment){
-            this((Object)fragment);
+        public WrapperModel(android.app.Fragment fragment) {
+            this((Object) fragment);
         }
 
-        private WrapperModel(Object container){
+        private WrapperModel(Object container) {
             this.container = container;
 
         }
 
-        private WrapperModel(){
+        private WrapperModel() {
         }
+
         public void setPermissions(String... permissions) {
             this.permissions = permissions;
         }
@@ -299,8 +332,8 @@ public class PermissionHelper {
         }
 
 
-        public void setPermissonCallback(PermissonCallback permissonCallback) {
-            this.permissonCallback = permissonCallback;
+        public void setPermissionCallback(PermissionCallback permissionCallback) {
+            this.permissionCallback = permissionCallback;
         }
 
 
@@ -321,7 +354,7 @@ public class PermissionHelper {
             return true;
             //不适用permissonCallback 判断是否相等, 因为在onRequestPermissionsResult PermissonCallback中不能得到该对象
 
-//            return !(permissonCallback != null ? !permissonCallback.equals(that.permissonCallback) : that.permissonCallback != null);
+//            return !(permissionCallback != null ? !permissionCallback.equals(that.permissionCallback) : that.permissionCallback != null);
 
         }
 
@@ -330,7 +363,7 @@ public class PermissionHelper {
             int result = 0;
             //result = container != null ? container.hashCode() : 0;
             result = 31 * result + (permissions != null ? Arrays.hashCode(permissions) : 0);
-            //result = 31 * result + (permissonCallback != null ? permissonCallback.hashCode() : 0);
+            //result = 31 * result + (permissionCallback != null ? permissionCallback.hashCode() : 0);
             result = 31 * result + requestCode;
             return result;
         }
@@ -340,12 +373,11 @@ public class PermissionHelper {
             return "WrapperModel{" +
                     "container=" + container +
                     ", permissions=" + Arrays.toString(permissions) +
-                    ", permissonCallback=" + permissonCallback +
+                    ", permissionCallback=" + permissionCallback +
                     ", requestCode=" + requestCode +
                     '}';
         }
     }
-
 
 
 }

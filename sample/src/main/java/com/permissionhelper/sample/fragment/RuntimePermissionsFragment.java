@@ -1,27 +1,29 @@
 package com.permissionhelper.sample.fragment;
 
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.navy.permission.PermissionHelper;
-import com.navy.permission.PermissionHelperTest;
 import com.navy.permission.PermissionModel;
-import com.navy.permission.callback.PermissonCallback;
+import com.navy.permission.callback.PermissionCallback;
+import com.navy.permission.callback.PermissionDetailCallback;
 import com.navy.permission.util.FileUtil;
 import com.navy.permission.util.LogUtil;
-import com.permissionhelper.sample.MainActivity;
 import com.permissionhelper.sample.R;
 
 import java.io.File;
+import java.util.Arrays;
 
 /**
  * Created by navychen on 16/8/5.
@@ -63,9 +65,7 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
             case R.id.btn_contacts_permission:
                 break;
             case R.id.btn_storage_permission:
-//                if (getActivity() instanceof MainActivity) {
-//                    ((MainActivity) getActivity()).changeFragment(new StoragePermissionsFragment(), "storage");
-//                }
+                writeAndReadStorage();
                 break;
             case R.id.btn_write_storage:
 
@@ -77,17 +77,50 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
         }
     }
 
+    private void writeAndReadStorage() {
+        PermissionHelper.getInstance().with(this)
+                .setPermissions(PermissionModel.READ_EXTERNAL_STORAGE, PermissionModel.WRITE_EXTERNAL_STORAGE)
+                .setRequestCode(1000)
+                .setPermissonCallback(new PermissionDetailCallback() {
+
+                    @Override
+                    public void onPermissionExplained(String []permission, PermissionHelper.WrapperModel model) {
+                        LogUtil.d("onPermissionExplained " + permission);
+                        getAlertDialog(permission, model).show();
+                    }
+
+                    @Override
+                    public void onPermissionGranted() {
+                        String content = "sdfassssssssssssssssssssssssssssssfsadasfaaaaaaassssssadsadasdasdasdas";
+                        if (FileUtil.writeStrinToFile(storageFile.getAbsolutePath(), content)) {
+                            Toast.makeText(getContext(), content + "  写入成功", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(getContext(), content + "  写入失败", Toast.LENGTH_LONG).show();
+                        }
+                        String context = FileUtil.readStrinToFile(storageFile.getAbsolutePath());
+                        Toast.makeText(getContext(), context+"读取成功", Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onPermissionReject() {
+                        Toast.makeText(getContext(), "权限被拒绝", Toast.LENGTH_LONG).show();
+                    }
+
+
+                })
+                .requestPermissions();
+    }
 
 
     private void readStorage() {
          PermissionHelper.getInstance().with(this)
                 .setPermissions(PermissionModel.READ_EXTERNAL_STORAGE)
                  .setRequestCode(1000)
-                .setPermissonCallback(new PermissonCallback() {
+                .setPermissonCallback(new PermissionCallback() {
                     @Override
                     public void onPermissionGranted() {
                         String context = FileUtil.readStrinToFile(storageFile.getAbsolutePath());
-                        Toast.makeText(getContext(), context, Toast.LENGTH_LONG).show();
+                        Toast.makeText(getContext(), context+"读取成功", Toast.LENGTH_LONG).show();
                     }
 
                     @Override
@@ -105,7 +138,7 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
         PermissionHelper.getInstance().with(this)
                 .setPermissions(PermissionModel.WRITE_EXTERNAL_STORAGE)
                 .setRequestCode(100)
-                .setPermissonCallback(new PermissonCallback() {
+                .setPermissonCallback(new PermissionCallback() {
                     @Override
                     public void onPermissionGranted() {
                         String content = "sdfassssssssssssssssssssssssssssssfsadasfaaaaaaassssssadsadasdasdasdas";
@@ -129,6 +162,23 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         LogUtil.d("==================onRequestPermissionsResult");
         PermissionHelper.getInstance().onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+
+
+    public AlertDialog getAlertDialog(final String []permission, final PermissionHelper.WrapperModel model) {
+        AlertDialog builder = new AlertDialog.Builder(getContext())
+                .setTitle("Permission Needs Explanation")
+                .create();;
+
+        builder.setButton(DialogInterface.BUTTON_POSITIVE, "Request", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                PermissionHelper.getInstance().requestAfterExplanation(permission, model);
+            }
+        });
+        builder.setMessage("Permissions need explanation (" +  Arrays.toString(permission) + ")");
+        return builder;
     }
 
 

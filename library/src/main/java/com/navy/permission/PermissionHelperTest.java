@@ -8,12 +8,8 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 
-import com.navy.permission.callback.PermissonCallback;
+import com.navy.permission.callback.PermissionCallback;
 import com.navy.permission.util.PermissionUtil;
-
-import java.util.Set;
-
-
 
 
 public class PermissionHelperTest {
@@ -33,12 +29,12 @@ public class PermissionHelperTest {
 
     private Object container;//可以是Activity,也可以是Fragment
     private String[] permissions;
-    private PermissonCallback baseCallback;
+    private PermissionCallback baseCallback;
     private int requestCode;
 
 
 
-    private PermissionHelperTest(Object container, String[] permissions, PermissonCallback baseCallback, int requestCode) {
+    private PermissionHelperTest(Object container, String[] permissions, PermissionCallback baseCallback, int requestCode) {
         this.container = container;
         this.permissions = permissions;
         this.baseCallback = baseCallback;
@@ -124,7 +120,7 @@ public class PermissionHelperTest {
 //    public static class WrapperModel {
 //        private Object container;//可以是Activity,也可以是Fragment
 //        private String[] permissions;
-//        private PermissonCallback baseCallback;
+//        private PermissionCallback baseCallback;
 //        private int requestCode = 1000;
 //
 //
@@ -172,7 +168,7 @@ public class PermissionHelperTest {
 //        }
 //
 //
-//        public WrapperModel setPermissonCallback(PermissonCallback baseCallback) {
+//        public WrapperModel setPermissionCallback(PermissionCallback baseCallback) {
 //            if (baseCallback == null) {
 //                throw new IllegalArgumentException("baseCallback is illegal");
 //            }
