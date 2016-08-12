@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class PermissionHelper {
 
-    public static String TAG = "===========PermissionHelperTest";
+    public static String TAG = "PermissionHelper";
 
     private boolean isDebug = true;
     private Context appContext;
