@@ -7,17 +7,14 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 
 import com.navy.permission.callback.PermissionCallback;
 import com.navy.permission.callback.PermissionDetailCallback;
 import com.navy.permission.util.LogUtil;
 import com.navy.permission.util.PermissionUtil;
 
-import java.security.Permission;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 /**

@@ -23,7 +23,6 @@ import com.navy.permission.util.LogUtil;
 import com.permissionhelper.sample.R;
 
 import java.io.File;
-import java.util.Arrays;
 
 /**
  * Created by navychen on 16/8/5.

@@ -2,8 +2,6 @@ package com.navy.permission;
 
 import android.Manifest;
 
-import java.security.Permission;
-
 
 /**
  * Created by navychen on 16/8/5.
