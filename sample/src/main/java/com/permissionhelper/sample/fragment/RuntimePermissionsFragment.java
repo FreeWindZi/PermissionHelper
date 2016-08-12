@@ -79,14 +79,19 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
 
     private void writeAndReadStorage() {
         PermissionHelper.getInstance().with(this)
-                .setPermissions(PermissionModel.READ_EXTERNAL_STORAGE, PermissionModel.WRITE_EXTERNAL_STORAGE)
+                .setPermissions(PermissionModel.READ_EXTERNAL_STORAGE,
+                        PermissionModel.WRITE_EXTERNAL_STORAGE,
+                        PermissionModel.ACCESS_COARSE_LOCATION,
+                        PermissionModel.WRITE_CONTACTS,
+                        PermissionModel.CAMERA,
+                        PermissionModel.READ_CONTACTS)
                 .setRequestCode(1000)
                 .setPermissonCallback(new PermissionDetailCallback() {
 
                     @Override
-                    public void onPermissionExplained(String []permission, PermissionHelper.WrapperModel model) {
-                        LogUtil.d("onPermissionExplained " + permission);
-                        getAlertDialog(permission, model).show();
+                    public void onPermissionExplained(String []permission) {
+                        LogUtil.d("==================onPermissionExplained " + permission);
+                        getAlertDialog(permission).show();
                     }
 
                     @Override
@@ -166,15 +171,15 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
 
 
 
-    public AlertDialog getAlertDialog(final String []permission, final PermissionHelper.WrapperModel model) {
+    public AlertDialog getAlertDialog(final String []permission) {
         AlertDialog builder = new AlertDialog.Builder(getContext())
                 .setTitle("Permission Needs Explanation")
-                .create();;
+                .create();
 
         builder.setButton(DialogInterface.BUTTON_POSITIVE, "Request", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                PermissionHelper.getInstance().requestAfterExplanation(permission, model);
+                PermissionHelper.getInstance().requestAfterExplanation(permission);
             }
         });
         builder.setMessage("Permissions need explanation (" +  Arrays.toString(permission) + ")");

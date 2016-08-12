@@ -9,6 +9,6 @@ import java.sql.Wrapper;
  */
 public interface PermissionDetailCallback extends PermissionCallback {
 
-    void onPermissionExplained( String []permissions, PermissionHelper.WrapperModel model);
+    void onPermissionExplained( String []permissions);
 
 }

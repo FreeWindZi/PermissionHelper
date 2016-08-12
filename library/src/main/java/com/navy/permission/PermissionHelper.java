@@ -7,6 +7,7 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 
 import com.navy.permission.callback.PermissionCallback;
 import com.navy.permission.callback.PermissionDetailCallback;
@@ -28,12 +29,10 @@ public class PermissionHelper {
 
     private boolean isDebug = true;
     private Context appContext;
-    private List<WrapperModel> wrapperModelList;
-
     private PermissionHelper.WrapperModel model = null;
-
     public static PermissionHelper permissionHelper = null;
 
+    private int requestPermissionsLenth = 0;  //表示已经接收到的权限的数量  如果接口是PermissionDetailCallback  权限由两部分组成
 
     public static PermissionHelper getInstance() {
         if (permissionHelper == null) {
@@ -96,41 +95,13 @@ public class PermissionHelper {
     }
 
     public void requestPermissions() {
-        LogUtil.d("开始检查输入的参数");
         checkWrapperModel(model);
+        requestPermissionsModel(model);
 
-        LogUtil.d("输入参数合法-------" + model.toString());
-        if (wrapperModelList == null) {
-            wrapperModelList = new ArrayList<>();
-        }
-        if (wrapperModelList.contains(model)) {
-            LogUtil.e("you must hava different requestCode or permissions");
-            model = null;
-            return;
-        }
-
-
-        wrapperModelList.add(model);
-        LogUtil.d("permissionSet的长度加1   +++" + "permissionSet的长度为:" + wrapperModelList.size());
-        model = null;
-        LogUtil.d("设置model为null  ");
-        Iterator<WrapperModel> iter = wrapperModelList.iterator();
-        while (iter.hasNext()) {
-            WrapperModel tempModel = iter.next();
-            boolean isNeedResult = requestPermissionsModel(tempModel);
-            if (!isNeedResult) {
-                LogUtil.d("permissionSet的长度减1 ---- ");
-                iter.remove();
-            }
-        }
-        LogUtil.d("权限声请完毕   permissionSet的长度为:" + wrapperModelList.size());
     }
 
 
-
-
-    //返回的参数 表示是否要回调onRequestPermissionsResult  如果需要回调permissionSet 就不删除
-    private boolean requestPermissionsModel(WrapperModel pModel) {
+    private void requestPermissionsModel(WrapperModel pModel) {
         if (appContext == null) {
             appContext = getContext(pModel.container).getApplicationContext();
         }
@@ -147,32 +118,37 @@ public class PermissionHelper {
             pModel.permissions = PermissionUtil.getDeniedPermissons(appContext, pModel.permissions);
             if (pModel.permissions == null || pModel.permissions.length == 0) {
                 pModel.permissionCallback.onPermissionGranted();
+                afterPermissonCall();
             } else {
 
                 //如果接口是PermissionDetailCallback 添加回调解释接口
-
                 if (pModel.permissionCallback instanceof PermissionDetailCallback) {
                     //add by navy
-                    List<String> explainPermission = new ArrayList<>();
-                    for (String permission :pModel.permissions) {
+                    List<String> noExplainPermissions = new ArrayList<>();
+                    List<String> explainPermissions = new ArrayList<>();
+
+                    for (String permission : pModel.permissions) {
                         if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(pModel.container),
-                                permission)){
-                            explainPermission.add(permission);
-                            //
+                                permission)) {
+
+                            explainPermissions.add(permission);
                         } else {
-                            //noExplainPermission.add(permission);
+                            noExplainPermissions.add(permission);
                         }
 
                     }
-                    //if (explainPermission.size() == pModel.)
-                    ((PermissionDetailCallback)pModel.permissionCallback).onPermissionExplained(explainPermission.toArray(new String[1]), pModel);
-                   return false;
 
+                    ((PermissionDetailCallback) pModel.permissionCallback).onPermissionExplained(explainPermissions.toArray(new String[]{}));
+
+                    if (noExplainPermissions.size() != 0) {
+                        requestPermissions(model.container, noExplainPermissions.toArray(new String[]{}), model.requestCode);
+                    }
 
                 } else {
                     requestPermissions(pModel.container, pModel.permissions, pModel.requestCode);
+
                 }
-                return true;
+
 
             }
 
@@ -183,44 +159,55 @@ public class PermissionHelper {
             } else {
                 pModel.permissionCallback.onPermissionReject();
             }
+            afterPermissonCall();
         }
-        return false;
     }
 
 
-    public void requestAfterExplanation(String []permission, WrapperModel model){
-        requestPermissionsModel(model);
+    private void afterPermissonCall() {
+        model = null;
+        appContext = null;
+        requestPermissionsLenth = 0;
+        LogUtil.d( "权限回调完成");
     }
 
+
+    /**
+     * 只为实现了 PermissionDetailCallback 调用
+     *
+     * @param permission
+     */
+    public void requestAfterExplanation(String[] permission) {
+        if (permission.length != 0) { //表示每一个都需要解释
+
+            requestPermissions(model.container, permission, model.requestCode);
+
+
+        }
+
+    }
 
 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        LogUtil.d("请求回调 权限参数回调开始");
-        WrapperModel tempModel = new WrapperModel();
-        tempModel.setPermissions(permissions);
-        tempModel.setRequestCode(requestCode);
-        if (!wrapperModelList.contains(tempModel)) {
-            LogUtil.e("请求参赛与请求回调参数不同, 请仔细检查");
-            throw new IllegalArgumentException("请求参赛与请求回调参数不同, 请仔细检查");
-        }
+        LogUtil.d("请求权限" + "回调的requestCode=" + requestCode + "  而请求的requestCode = model.requestCode");
+        if (requestCode == model.requestCode) {
 
-        Iterator<WrapperModel> iter = wrapperModelList.iterator();
-        while (iter.hasNext()) {
-            WrapperModel model = iter.next();
-            if (model.equals(tempModel)) {
-                if (PermissionUtil.verifyPermissions(grantResults)) {
-                    model.permissionCallback.onPermissionGranted();
-                } else {
+            if (PermissionUtil.getDeniedPermissons(appContext, model.permissions).length == 0) {
+                model.permissionCallback.onPermissionGranted();
+                afterPermissonCall();
+            } else {
+                requestPermissionsLenth += permissions.length;
+                if (requestPermissionsLenth == model.permissions.length) {
                     model.permissionCallback.onPermissionReject();
+                    afterPermissonCall();
                 }
-                break;
+
             }
+
+
+        } else {
+            LogUtil.e("发生未知错误" + "回调的requestCode=" + requestCode + "  而请求的requestCode = model.requestCode");
         }
-        LogUtil.d("权限借口回调完成");
-        wrapperModelList.remove(tempModel);
-        LogUtil.d("wrapperModelList 移除数据 " + "permissionSet的长度为:" + wrapperModelList.size());
-
-
     }
 
 
@@ -297,25 +284,7 @@ public class PermissionHelper {
         private int requestCode;
 
 
-        public WrapperModel(Activity activity) {
-            this((Object) activity);
-        }
-
-
-        public WrapperModel(Fragment fragment) {
-            this((Object) fragment);
-        }
-
-        /**
-         * android.support.v4.app.Fragment , 不推荐
-         *
-         * @param fragment
-         */
-        public WrapperModel(android.app.Fragment fragment) {
-            this((Object) fragment);
-        }
-
-        private WrapperModel(Object container) {
+        public WrapperModel(Object container) {
             this.container = container;
 
         }
@@ -336,37 +305,6 @@ public class PermissionHelper {
             this.permissionCallback = permissionCallback;
         }
 
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            WrapperModel that = (WrapperModel) o;
-
-            if (requestCode != that.requestCode) return false;
-//            if (container != null ? !container.equals(that.container) : that.container != null)
-//                return false;
-            // Probably incorrect - comparing Object[] arrays with Arrays.equals
-            if (!Arrays.equals(permissions, that.permissions))
-                return false;
-
-            return true;
-            //不适用permissonCallback 判断是否相等, 因为在onRequestPermissionsResult PermissonCallback中不能得到该对象
-
-//            return !(permissionCallback != null ? !permissionCallback.equals(that.permissionCallback) : that.permissionCallback != null);
-
-        }
-
-        @Override
-        public int hashCode() {
-            int result = 0;
-            //result = container != null ? container.hashCode() : 0;
-            result = 31 * result + (permissions != null ? Arrays.hashCode(permissions) : 0);
-            //result = 31 * result + (permissionCallback != null ? permissionCallback.hashCode() : 0);
-            result = 31 * result + requestCode;
-            return result;
-        }
 
         @Override
         public String toString() {
