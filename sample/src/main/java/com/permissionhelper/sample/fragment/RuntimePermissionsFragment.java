@@ -18,7 +18,7 @@ import com.navy.permission.PermissionHelper;
 import com.navy.permission.PermissionModel;
 import com.navy.permission.callback.PermissionCallback;
 import com.navy.permission.callback.PermissionDetailCallback;
-import com.navy.permission.util.FileUtil;
+import com.permissionhelper.sample.FileUtil;
 import com.navy.permission.util.LogUtil;
 import com.permissionhelper.sample.R;
 
@@ -45,8 +45,7 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
 
 
 
-        root.findViewById(R.id.btn_camera_permission).setOnClickListener(this);
-        root.findViewById(R.id.btn_contacts_permission).setOnClickListener(this);
+
         root.findViewById(R.id.btn_storage_permission).setOnClickListener(this);
 
         root.findViewById(R.id.btn_write_storage).setOnClickListener(this);
@@ -60,10 +59,7 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
     public void onClick(View v) {
         int id = v.getId();
         switch (id){
-            case R.id.btn_camera_permission:
-                break;
-            case R.id.btn_contacts_permission:
-                break;
+
             case R.id.btn_storage_permission:
                 writeAndReadStorage();
                 break;
@@ -86,10 +82,11 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
                         PermissionModel.CAMERA,
                         PermissionModel.READ_CONTACTS)
                 .setRequestCode(1000)
+                .setForceAccepting(true)
                 .setPermissonCallback(new PermissionDetailCallback() {
 
                     @Override
-                    public void onPermissionExplained(String []permission) {
+                    public void onPermissionExplained(String[] permission) {
                         LogUtil.d("==================onPermissionExplained " + permission);
                         getAlertDialog(permission).show();
                     }
@@ -103,7 +100,7 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
                             Toast.makeText(getContext(), content + "  写入失败", Toast.LENGTH_LONG).show();
                         }
                         String context = FileUtil.readStrinToFile(storageFile.getAbsolutePath());
-                        Toast.makeText(getContext(), context+"读取成功", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getContext(), context + "读取成功", Toast.LENGTH_LONG).show();
                     }
 
                     @Override
@@ -121,11 +118,12 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
          PermissionHelper.getInstance().with(this)
                 .setPermissions(PermissionModel.READ_EXTERNAL_STORAGE)
                  .setRequestCode(1000)
+                 .setForceAccepting(true)
                 .setPermissonCallback(new PermissionCallback() {
                     @Override
                     public void onPermissionGranted() {
                         String context = FileUtil.readStrinToFile(storageFile.getAbsolutePath());
-                        Toast.makeText(getContext(), context+"读取成功", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getContext(), context + "读取成功", Toast.LENGTH_LONG).show();
                     }
 
                     @Override
@@ -182,7 +180,11 @@ public class RuntimePermissionsFragment extends Fragment implements View.OnClick
                 PermissionHelper.getInstance().requestAfterExplanation(permission);
             }
         });
-        builder.setMessage("Permissions need explanation (" +  Arrays.toString(permission) + ")");
+        StringBuffer sb = new StringBuffer();
+        for (String str : permission) {
+            sb.append(str).append("\n");
+        }
+        builder.setMessage("Permissions need explanation ( \n" +  sb.toString() + ")");
         return builder;
     }
 

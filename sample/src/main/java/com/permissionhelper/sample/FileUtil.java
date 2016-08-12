@@ -1,4 +1,4 @@
-package com.navy.permission.util;
+package com.permissionhelper.sample;
 
 import android.util.Log;
 

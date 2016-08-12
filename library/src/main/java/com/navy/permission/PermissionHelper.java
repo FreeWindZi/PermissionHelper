@@ -73,7 +73,7 @@ public class PermissionHelper {
         if (model == null) {
             throw new IllegalArgumentException("you must call wth() mothed first");
         }
-        model.setPermissions(permissions);
+        model.permissions=permissions;
         return this;
     }
 
@@ -81,16 +81,23 @@ public class PermissionHelper {
         if (model == null) {
             throw new IllegalArgumentException("you must call wth() mothed first");
         }
-        model.setRequestCode(requestCode);
+        model.requestCode =requestCode ;
         return this;
     }
 
+    public PermissionHelper setForceAccepting(boolean forceAccepting) {
+        if (model == null) {
+            throw new IllegalArgumentException("you must call wth() mothed first");
+        }
+        model.forceAccepting = forceAccepting;
+        return this;
+    }
 
     public PermissionHelper setPermissonCallback(PermissionCallback callback) {
         if (model == null) {
             throw new IllegalArgumentException("you must call wth() mothed first");
         }
-        model.setPermissionCallback(callback);
+        model.permissionCallback = callback;
         return this;
     }
 
@@ -112,7 +119,6 @@ public class PermissionHelper {
             }
         }
 
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
             pModel.permissions = PermissionUtil.getDeniedPermissons(appContext, pModel.permissions);
@@ -120,7 +126,6 @@ public class PermissionHelper {
                 pModel.permissionCallback.onPermissionGranted();
                 afterPermissonCall();
             } else {
-
                 //如果接口是PermissionDetailCallback 添加回调解释接口
                 if (pModel.permissionCallback instanceof PermissionDetailCallback) {
                     //add by navy
@@ -137,8 +142,9 @@ public class PermissionHelper {
                         }
 
                     }
-
-                    ((PermissionDetailCallback) pModel.permissionCallback).onPermissionExplained(explainPermissions.toArray(new String[]{}));
+                    if (explainPermissions.size() !=0) {
+                        ((PermissionDetailCallback) pModel.permissionCallback).onPermissionExplained(explainPermissions.toArray(new String[]{}));
+                    }
 
                     if (noExplainPermissions.size() != 0) {
                         requestPermissions(model.container, noExplainPermissions.toArray(new String[]{}), model.requestCode);
@@ -179,19 +185,16 @@ public class PermissionHelper {
      */
     public void requestAfterExplanation(String[] permission) {
         if (permission.length != 0) { //表示每一个都需要解释
-
             requestPermissions(model.container, permission, model.requestCode);
-
-
         }
-
     }
 
 
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        LogUtil.d("请求权限" + "回调的requestCode=" + requestCode + "  而请求的requestCode = model.requestCode");
-        if (requestCode == model.requestCode) {
+        LogUtil.d("请求权限" + "回调的requestCode=" + requestCode + "  而请求的requestCode = "+model.requestCode);
 
+        if (requestCode == model.requestCode) {
+            String []deniedPermissons = PermissionUtil.getDeniedPermissons(appContext, model.permissions);
             if (PermissionUtil.getDeniedPermissons(appContext, model.permissions).length == 0) {
                 model.permissionCallback.onPermissionGranted();
                 afterPermissonCall();
@@ -199,7 +202,14 @@ public class PermissionHelper {
                 requestPermissionsLenth += permissions.length;
                 if (requestPermissionsLenth == model.permissions.length) {
                     model.permissionCallback.onPermissionReject();
-                    afterPermissonCall();
+                    if (model.forceAccepting) { // 再次声请权限
+                        model.permissions = deniedPermissons;
+                        requestPermissionsLenth = 0;
+                        requestPermissionsModel(model);
+                    } else {
+                        afterPermissonCall();
+                    }
+
                 }
 
             }
@@ -209,6 +219,8 @@ public class PermissionHelper {
             LogUtil.e("发生未知错误" + "回调的requestCode=" + requestCode + "  而请求的requestCode = model.requestCode");
         }
     }
+
+
 
 
     public static void checkWrapperModel(PermissionHelper.WrapperModel wrapperModel) {
@@ -281,30 +293,13 @@ public class PermissionHelper {
         private Object container;//可以是Activity,也可以是Fragment
         private String[] permissions;
         private PermissionCallback permissionCallback;
-        private int requestCode;
-
+        private int requestCode = 8080;
+        private boolean forceAccepting = false;
 
         public WrapperModel(Object container) {
             this.container = container;
 
         }
-
-        private WrapperModel() {
-        }
-
-        public void setPermissions(String... permissions) {
-            this.permissions = permissions;
-        }
-
-        public void setRequestCode(int requestCode) {
-            this.requestCode = requestCode;
-        }
-
-
-        public void setPermissionCallback(PermissionCallback permissionCallback) {
-            this.permissionCallback = permissionCallback;
-        }
-
 
         @Override
         public String toString() {
