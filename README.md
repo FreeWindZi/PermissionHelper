@@ -81,3 +81,16 @@ onRequestPermissionsResult重写
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         PermissionHelper.getInstance().onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
+
+
+
+
+
+
+##交流和讨论
+
+QQ群：306314484
+
+邮箱：navychen001@outlook.com
+
+欢迎发现bug, 欢迎技术交流讨论
