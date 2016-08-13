@@ -14,10 +14,10 @@
 
 2. 必须重写Activity或者Fragment的onRequestPermissionsResult方法，或者实现ActivityCompat.OnRequestPermissionsResultCallback接口。
     推荐第二种。
-3. 在的`onRequestPermissionsResult`方法中调用 `PermissionHelper.getInstance().onRequestPermissionsResult(requestCode, permissions, grantResults);`
+3. 在重写的onRequestPermissionsResult方法中调用PermissionHelper.getInstance().onRequestPermissionsResult();
 
-4. 如果你实现的接口是`PermissionDetailCallback`接口，它和`PermissionCallback`接口不同之处，提供了 `onPermissionExplained `权限解释接口。 `onPermissionExplained
- `调用`PermissionHelper.getInstance().requestAfterExplanation(permission)`;
+4. 如果你实现的接口是PermissionDetailCallback接口，它和PermissionCallbac接口不同之处，提供了onPermissionExplained权限解释方法回调。记得在onPermissionExplained调用PermissionHelper.getInstance().requestAfterExplanation();
+
 
 ##使用
 
